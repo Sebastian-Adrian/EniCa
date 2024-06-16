@@ -3,8 +3,7 @@ package eu.sadrian.controller;
 
 import eu.sadrian.model.Zaehler;
 import eu.sadrian.repository.ZaehlerRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,5 +19,30 @@ public class ZaehlerController {
     @GetMapping("/api/zaehler")
     List<Zaehler> all() {
         return repository.findAll();
+    }
+
+    @PostMapping("/api/zaehler")
+    Zaehler newZaehler(@RequestBody Zaehler newZaehler) {
+        return repository.save(newZaehler);
+    }
+
+    @PutMapping("/api/zaehler/{id}")
+    Zaehler replaceZaehler(@RequestBody Zaehler newZaehler, @PathVariable Long id) {
+
+        return repository.findById(id)
+                .map(zaehler -> {
+                    zaehler.setZaehlerNr(newZaehler.getZaehlerNr());
+                    zaehler.setZaehlerArt(newZaehler.getZaehlerArt());
+                    return repository.save(zaehler);
+                })
+                .orElseGet(() -> {
+                    newZaehler.setId(id);
+                    return repository.save(newZaehler);
+                });
+    }
+
+    @DeleteMapping("/api/zaehler/{id}")
+    void deleteZaehler(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 }

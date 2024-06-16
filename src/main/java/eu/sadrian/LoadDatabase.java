@@ -13,10 +13,13 @@ public class LoadDatabase {
 
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
+    /*
     @Bean
     CommandLineRunner initDatabase(ZaehlerRepository repository) {
         return args -> {
-            log.info("Preloading {}", repository.save(new Zaehler(61458, eu.sadrian.model.zaehlerArt.STROM)));
+            log.info("Preloading {}", repository.save(new Zaehler(33813, eu.sadrian.model.zaehlerArt.GAS)));
         };
     }
+
+     */
 }
