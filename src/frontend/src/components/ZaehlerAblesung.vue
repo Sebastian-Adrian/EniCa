@@ -11,7 +11,7 @@ export default {
   },
   methods: {
     submitForm() {
-      fetch('http://localhost:8080/ablesungen', {
+      fetch('http://localhost:8080/api/ablesungen', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

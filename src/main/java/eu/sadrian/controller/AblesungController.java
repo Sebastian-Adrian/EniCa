@@ -21,19 +21,19 @@ public class AblesungController {
 
     // Aggregate root
     // tag::get-aggregate-root[]
-    @GetMapping("/ablesungen")
+    @GetMapping("/api/ablesungen")
     List<Ablesung> all() {
         return repository.findAll();
     }
     // end::get-aggregate-root[]
 
-    @PostMapping("/ablesungen")
+    @PostMapping("/api/ablesungen")
     Ablesung newAblesung(@RequestBody Ablesung newAblesung) {
         return repository.save(newAblesung);
     }
 
     // Single item
-    @GetMapping("/ablesungen/{id}")
+    @GetMapping("/api/ablesungen/{id}")
     EntityModel<Ablesung> one(@PathVariable Long id) {
         Ablesung ablesung = repository.findById(id)
                 .orElseThrow(() -> new AblesungNotFoundException(id));
@@ -43,7 +43,7 @@ public class AblesungController {
                 linkTo(methodOn(AblesungController.class).all()).withRel("ablesungen"));
     }
 
-    @PutMapping("/ablesungen/{id}")
+    @PutMapping("/api/ablesungen/{id}")
     Ablesung replaceAblesung(@RequestBody Ablesung newAblesung, @PathVariable Long id) {
         return repository.findById(id)
                 .map(ablesung -> {
@@ -59,7 +59,7 @@ public class AblesungController {
     }
 
     // tag::delete[]
-    @DeleteMapping("/ablesungen/{id}")
+    @DeleteMapping("/api/ablesungen/{id}")
     void deleteAblesung(@PathVariable Long id) {
         repository.deleteById(id);
     }
