@@ -33,6 +33,7 @@ public class ZaehlerController {
                 .map(zaehler -> {
                     zaehler.setZaehlerNr(newZaehler.getZaehlerNr());
                     zaehler.setZaehlerArt(newZaehler.getZaehlerArt());
+                    zaehler.setZaehlerName(newZaehler.getZaehlerName());
                     return repository.save(zaehler);
                 })
                 .orElseGet(() -> {

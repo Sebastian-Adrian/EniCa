@@ -1,32 +1,19 @@
-<script>
-export default {
-  data() {
-    return {
-      ablesung: {
-        zaehlerNr: '',
-        zaehlerstand: '',
-        datum: ''
-      }
-    }
-  },
-  methods: {
-    submitForm() {
-      fetch('http://localhost:8080/api/ablesungen', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(this.ablesung)
-      })
-          .then(response => response.json())
-          .then(data => {
-            console.log('Success:', data);
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-    }
-  }
+<script setup>
+
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const zaehlerList = ref([])
+const ablesung = ref({ zaehlerNr: '', zaehlerstand: '', datum: '' })
+
+onMounted(async () => {
+  const response = await axios.get('/api/zaehler') // Liste der verfügbaren Zähler abrufen
+  zaehlerList.value = response.data
+})
+
+const submitForm = async () => {
+  const response = await axios.post('/api/ablesungen', ablesung.value)
+  console.log('Success:', response.data)
 }
 </script>
 
@@ -36,7 +23,11 @@ export default {
     <form @submit.prevent="submitForm">
       <div class="mb-3">
         <label for="zaehlerNr">Zähler Nr</label>
-        <input type="number" id="zaehlerNr" v-model="ablesung.zaehlerNr" class="form-control"/>
+        <select id="zaehlerNr" v-model="ablesung.zaehlerNr" class="form-control"> <!-- select Element hinzufügen -->
+          <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler.zaehlerNr">
+            {{ zaehler.zaehlerNr }}
+          </option>
+        </select>
       </div>
       <div class="mb-3">
         <label for="zaehlerstand">Zählerstand</label>

@@ -9,15 +9,25 @@ public class Zaehler {
     @GeneratedValue
     private Long id;
     private int zaehlerNr;
+    private String zaehlerName;
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private zaehlerArt zaehlerArt;
 
     public Zaehler() {
     }
 
-    public Zaehler(int zaehlerNr, eu.sadrian.model.zaehlerArt zaehlerArt) {
+    public Zaehler(int zaehlerNr, eu.sadrian.model.zaehlerArt zaehlerArt, String zaehlerName) {
         this.zaehlerNr = zaehlerNr;
         this.zaehlerArt = zaehlerArt;
+        this.zaehlerName = zaehlerName;
+    }
+
+    public String getZaehlerName() {
+        return zaehlerName;
+    }
+
+    public void setZaehlerName(String zaehlerName) {
+        this.zaehlerName = zaehlerName;
     }
 
     public int getZaehlerNr() {
@@ -36,11 +46,11 @@ public class Zaehler {
         this.zaehlerArt = zaehlerArt;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

@@ -4,6 +4,9 @@ import eu.sadrian.model.Ablesung;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface AblesungRepository extends JpaRepository<Ablesung, Long> {
+    List<Ablesung> findByZaehlerNr(int zaehlerNr);
 }

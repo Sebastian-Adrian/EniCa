@@ -11,6 +11,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/api/ablesungen")
 public class AblesungController {
 
     private final AblesungRepository repository;
@@ -21,13 +22,13 @@ public class AblesungController {
 
     // Aggregate root
     // tag::get-aggregate-root[]
-    @GetMapping("/api/ablesungen")
+    @GetMapping("/")
     List<Ablesung> all() {
         return repository.findAll();
     }
     // end::get-aggregate-root[]
 
-    @PostMapping("/api/ablesungen")
+    @PostMapping("/")
     Ablesung newAblesung(@RequestBody Ablesung newAblesung) {
         return repository.save(newAblesung);
     }
@@ -43,7 +44,12 @@ public class AblesungController {
                 linkTo(methodOn(AblesungController.class).all()).withRel("ablesungen"));
     }
 
-    @PutMapping("/api/ablesungen/{id}")
+    @GetMapping("/zaehler/{zaehlerNr}")
+    List<Ablesung> findByZaehlerNr(@PathVariable int zaehlerNr) {
+        return repository.findByZaehlerNr(zaehlerNr);
+    }
+
+    @PutMapping("/{id}")
     Ablesung replaceAblesung(@RequestBody Ablesung newAblesung, @PathVariable Long id) {
         return repository.findById(id)
                 .map(ablesung -> {
@@ -59,7 +65,7 @@ public class AblesungController {
     }
 
     // tag::delete[]
-    @DeleteMapping("/api/ablesungen/{id}")
+    @DeleteMapping("/{id}")
     void deleteAblesung(@PathVariable Long id) {
         repository.deleteById(id);
     }
