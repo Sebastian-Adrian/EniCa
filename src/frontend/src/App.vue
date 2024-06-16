@@ -4,7 +4,7 @@
 
 <script>
 
-import ZählerAblesung from "@/components/ZählerAblesung.vue";
+import ZählerAblesung from "@/components/ZaehlerAblesung.vue";
 export default {
   name: 'App',
   components: {
