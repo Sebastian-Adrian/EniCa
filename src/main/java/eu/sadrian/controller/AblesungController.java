@@ -34,7 +34,7 @@ public class AblesungController {
     }
 
     // Single item
-    @GetMapping("/api/ablesungen/{id}")
+    @GetMapping("/{id}")
     EntityModel<Ablesung> one(@PathVariable Long id) {
         Ablesung ablesung = repository.findById(id)
                 .orElseThrow(() -> new AblesungNotFoundException(id));

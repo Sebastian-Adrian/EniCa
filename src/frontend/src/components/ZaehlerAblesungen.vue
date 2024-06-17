@@ -11,13 +11,21 @@
         <th>Zählernummer</th>
         <th>Ablesedatum</th>
         <th>Ablesewert</th>
+        <th>Aktionen</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="ablesung in ablesungen" :key="ablesung.id">
         <td>{{ selectedZaehler.zaehlerNr }}</td>
         <td>{{ formatDate(ablesung.datum) }}</td>
-        <td><input type="text" class="form-control" v-model="ablesung.zaehlerstand" @change="updateAblesung(ablesung)" /></td>
+        <td>
+          <input type="text" class="form-control" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
+          <span v-else>{{ ablesung.zaehlerstand }}</span>
+        </td>
+        <td>
+          <button v-if="!ablesung.editMode" class="btn btn-sm btn-primary" @click="startEditing(ablesung)">Bearbeiten</button>
+          <button v-else class="btn btn-success" @click="confirmEditing(ablesung)">Bestätigen</button>
+        </td>
       </tr>
       </tbody>
     </table>
@@ -43,10 +51,21 @@ export default {
     async fetchAblesungen() {
       if (this.selectedZaehler) {
         const response = await axios.get(`/api/ablesungen/zaehler/${this.selectedZaehler.zaehlerNr}`)
-        this.ablesungen = response.data
-        // Sortieren der Ablesungen nach Datum, beginnend mit der neuesten
+        this.ablesungen = response.data.map(ablesung => ({
+          ...ablesung,
+          editMode: false,
+          tempZaehlerstand: ablesung.zaehlerstand
+        }))
         this.ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
       }
+    },
+    startEditing(ablesung) {
+      ablesung.editMode = true
+    },
+    async confirmEditing(ablesung) {
+      ablesung.editMode = false
+      ablesung.zaehlerstand = ablesung.tempZaehlerstand
+      await this.updateAblesung(ablesung)
     },
     async updateAblesung(ablesung) {
       await axios.put(`/api/ablesungen/${ablesung.id}`, ablesung)
@@ -59,7 +78,6 @@ export default {
       return `${day}.${month}.${year}`
     }
   },
-
 }
 </script>
 
