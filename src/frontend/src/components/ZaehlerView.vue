@@ -43,10 +43,11 @@ const createZaehler = async () => {
   showNewZaehlerForm.value = false // Formular verbergen
 }
 
+/*
 const toggleNewZaehlerForm = () => {
   showNewZaehlerForm.value = !showNewZaehlerForm.value
 }
-
+*/
 const getZaehlerArtClass = (zaehlerArt) => {
   switch (zaehlerArt) {
     case 'GAS':
@@ -82,11 +83,69 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="zaehler"><h3>Zähler</h3>
+
+  <div class="zaehler p-3 border rounded">
+    <h3>Zähler</h3>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Zählernummer</th>
+        <th>Zählername</th>
+        <th>Zählerart</th>
+        <th>Zählerstand</th>
+        <th>Aktionen</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="zaehler in zaehlerList" :key="zaehler.id">
+        <td>
+          <input v-if="selectedZaehler && selectedZaehler.id === zaehler.id" v-model="selectedZaehler.zaehlerNr" class="form-control"/>
+          <span v-else>{{ zaehler.zaehlerNr }}</span>
+        </td>
+        <td>
+          <input v-if="selectedZaehler && selectedZaehler.id === zaehler.id" v-model="selectedZaehler.zaehlerName" class="form-control"/>
+          <span v-else>{{ zaehler.zaehlerName }}</span>
+        </td>
+        <td>
+          <select v-if="selectedZaehler && selectedZaehler.id === zaehler.id" id="newZaehlerArt" v-model="selectedZaehler.zaehlerArt" class="form-control">
+            <option v-for="option in zaehlerArtOptions" :key="option" :value="option">
+              {{ option }}
+            </option>
+          </select>
+          <span v-else :class="getZaehlerArtClass(zaehler.zaehlerArt)">{{ zaehler.zaehlerArt }}</span>
+        </td>
+        <td>
+          <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span>
+        </td>
+        <td>
+          <button v-if="selectedZaehler && selectedZaehler.id" @click="saveZaehler" class="btn btn-primary">Speichern</button>
+          <button v-else @click="selectZaehler(zaehler)" class="btn btn-secondary">Bearbeiten</button>
+          <button @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>
+        </td>
+      </tr>
+      <tr>
+        <td><input v-model="newZaehler.zaehlerNr" class="form-control"></td>
+        <td><input v-model="newZaehler.zaehlerName" class="form-control"></td>
+        <td>
+          <select v-model="newZaehler.zaehlerArt" class="form-control">
+            <option v-for="option in zaehlerArtOptions" :key="option" :value="option">
+              {{ option }}
+            </option>
+          </select>
+        </td>
+
+        <td><button @click="createZaehler" class="btn btn-primary">Erstellen</button></td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+<!--  <div class="zaehler"><h3>Zähler</h3>
     <ul class="list-group">
       <li v-for="zaehler in zaehlerList" :key="zaehler.id" class="list-group-item">
         {{ zaehler.zaehlerNr }} - {{ zaehler.zaehlerName }} – <span :class="getZaehlerArtClass(zaehler.zaehlerArt)">{{ zaehler.zaehlerArt }}</span>
-        <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span> <!-- Letzten Zählerstand anzeigen -->
+        <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span> &lt;!&ndash; Letzten Zählerstand anzeigen &ndash;&gt;
         <button class="btn btn-primary float-end btn-sm" @click="selectZaehler(zaehler)">Bearbeiten</button>
         <button class="btn btn-danger float-end me-2 btn-sm" @click="deleteZaehler(zaehler)">Löschen</button>
       </li>
@@ -134,7 +193,7 @@ onMounted(async () => {
         <button type="submit" class="btn btn-primary">Erstellen</button>
       </form>
     </div>
-  </div>
+  </div>-->
 </template>
 
 <style scoped>
