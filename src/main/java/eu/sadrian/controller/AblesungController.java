@@ -22,13 +22,13 @@ public class AblesungController {
 
     // Aggregate root
     // tag::get-aggregate-root[]
-    @GetMapping("/")
+    @GetMapping()
     List<Ablesung> all() {
         return repository.findAll();
     }
     // end::get-aggregate-root[]
 
-    @PostMapping("/")
+    @PostMapping()
     Ablesung newAblesung(@RequestBody Ablesung newAblesung) {
         return repository.save(newAblesung);
     }

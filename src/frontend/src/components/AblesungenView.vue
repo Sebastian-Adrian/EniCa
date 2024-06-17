@@ -17,14 +17,17 @@
       <tbody>
       <tr v-for="ablesung in ablesungen" :key="ablesung.id">
         <td>{{ selectedZaehler.zaehlerNr }}</td>
-        <td>{{ formatDate(ablesung.datum) }}</td>
         <td>
-          <input type="text" class="form-control" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
+          <input type="date" class="form-control-sm edit-input" v-if="ablesung.editMode" v-model="ablesung.tempDatum" />
+          <span v-else>{{ formatDate(ablesung.datum) }}</span>
+        </td>
+        <td>
+          <input type="text" class="form-control-sm edit-input" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
           <span v-else>{{ ablesung.zaehlerstand }}</span>
         </td>
         <td>
           <button v-if="!ablesung.editMode" class="btn btn-sm btn-primary" @click="startEditing(ablesung)">Bearbeiten</button>
-          <button v-else class="btn btn-success" @click="confirmEditing(ablesung)">Bestätigen</button>
+          <button v-else class="btn btn-sm btn-success" @click="confirmEditing(ablesung)">Bestätigen</button>
         </td>
       </tr>
       </tbody>
@@ -54,7 +57,8 @@ export default {
         this.ablesungen = response.data.map(ablesung => ({
           ...ablesung,
           editMode: false,
-          tempZaehlerstand: ablesung.zaehlerstand
+          tempZaehlerstand: ablesung.zaehlerstand,
+          tempDatum: ablesung.datum
         }))
         this.ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
       }
@@ -65,6 +69,7 @@ export default {
     async confirmEditing(ablesung) {
       ablesung.editMode = false
       ablesung.zaehlerstand = ablesung.tempZaehlerstand
+      ablesung.datum = ablesung.tempDatum
       await this.updateAblesung(ablesung)
     },
     async updateAblesung(ablesung) {
@@ -89,5 +94,11 @@ export default {
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+
+.edit-input {
+  width: 10em;
+  display: inline-block;
+  margin-right: 10px;
 }
 </style>

@@ -14,25 +14,7 @@ public class Ablesung {
     private Long id;
     private int zaehlerNr;
     private int zaehlerstand;
-    private int tmpZaehlerstand;
-    private boolean editMode;
     private String datum;
-
-    public int getTmpZaehlerstand() {
-        return tmpZaehlerstand;
-    }
-
-    public void setTmpZaehlerstand(int tmpZaehlerstand) {
-        this.tmpZaehlerstand = tmpZaehlerstand;
-    }
-
-    public boolean isEditMode() {
-        return editMode;
-    }
-
-    public void setEditMode(boolean editMode) {
-        this.editMode = editMode;
-    }
 
     public Ablesung() {
     }

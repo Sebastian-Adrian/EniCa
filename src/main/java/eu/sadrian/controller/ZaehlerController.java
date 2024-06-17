@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/zaehler")
 public class ZaehlerController {
 
     private final ZaehlerRepository repository;
@@ -16,17 +17,17 @@ public class ZaehlerController {
         this.repository = repository;
     }
 
-    @GetMapping("/api/zaehler")
+    @GetMapping()
     List<Zaehler> all() {
         return repository.findAll();
     }
 
-    @PostMapping("/api/zaehler")
+    @PostMapping()
     Zaehler newZaehler(@RequestBody Zaehler newZaehler) {
         return repository.save(newZaehler);
     }
 
-    @PutMapping("/api/zaehler/{id}")
+    @PutMapping("/{id}")
     Zaehler replaceZaehler(@RequestBody Zaehler newZaehler, @PathVariable Long id) {
 
         return repository.findById(id)
@@ -42,7 +43,7 @@ public class ZaehlerController {
                 });
     }
 
-    @DeleteMapping("/api/zaehler/{id}")
+    @DeleteMapping("/{id}")
     void deleteZaehler(@PathVariable Long id) {
         repository.deleteById(id);
     }

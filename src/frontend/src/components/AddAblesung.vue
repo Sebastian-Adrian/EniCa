@@ -25,7 +25,7 @@ const submitForm = async () => {
         <label for="zaehlerNr">Zähler Nr</label>
         <select id="zaehlerNr" v-model="ablesung.zaehlerNr" class="form-control"> <!-- select Element hinzufügen -->
           <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler.zaehlerNr">
-            {{ zaehler.zaehlerNr }}
+            {{ zaehler.zaehlerNr }} - {{ zaehler.zaehlerName }}
           </option>
         </select>
       </div>
