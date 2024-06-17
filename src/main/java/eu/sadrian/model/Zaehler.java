@@ -2,6 +2,8 @@ package eu.sadrian.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class Zaehler {
 
@@ -12,6 +14,9 @@ public class Zaehler {
     private String zaehlerName;
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private zaehlerArt zaehlerArt;
+
+    @OneToMany(mappedBy = "zaehler", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Tarif> tarifList;
 
     public Zaehler() {
     }

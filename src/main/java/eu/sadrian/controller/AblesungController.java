@@ -1,7 +1,9 @@
 package eu.sadrian.controller;
 
 import eu.sadrian.model.Ablesung;
+import eu.sadrian.model.Zaehler;
 import eu.sadrian.repository.AblesungRepository;
+import eu.sadrian.repository.ZaehlerRepository;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,29 +16,39 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/api/ablesungen")
 public class AblesungController {
 
-    private final AblesungRepository repository;
+    private final AblesungRepository ablesungRepository;
+    private final ZaehlerRepository zaehlerRepository;
 
-    AblesungController(AblesungRepository repository) {
-        this.repository = repository;
+    AblesungController(AblesungRepository ablesungRepository, ZaehlerRepository zaehlerRepository) {
+        this.ablesungRepository = ablesungRepository;
+        this.zaehlerRepository = zaehlerRepository;
+
     }
 
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping()
     List<Ablesung> all() {
-        return repository.findAll();
+        return ablesungRepository.findAll();
     }
     // end::get-aggregate-root[]
 
     @PostMapping()
     Ablesung newAblesung(@RequestBody Ablesung newAblesung) {
-        return repository.save(newAblesung);
+        Long id = newAblesung.getZaehler().getId();
+        Zaehler zaehler = zaehlerRepository.findById(id)
+                .orElseThrow(() -> new ZaehlerNotFoundException(id));
+
+        newAblesung.setZaehler(zaehler);
+
+        return ablesungRepository.save(newAblesung);
+
     }
 
     // Single item
     @GetMapping("/{id}")
     EntityModel<Ablesung> one(@PathVariable Long id) {
-        Ablesung ablesung = repository.findById(id)
+        Ablesung ablesung = ablesungRepository.findById(id)
                 .orElseThrow(() -> new AblesungNotFoundException(id));
 
         return EntityModel.of(ablesung,
@@ -44,30 +56,30 @@ public class AblesungController {
                 linkTo(methodOn(AblesungController.class).all()).withRel("ablesungen"));
     }
 
-    @GetMapping("/zaehler/{zaehlerNr}")
-    List<Ablesung> findByZaehlerNr(@PathVariable int zaehlerNr) {
-        return repository.findByZaehlerNr(zaehlerNr);
+    @GetMapping("/zaehler/{id}")
+    List<Ablesung> findByZaehlerId(@PathVariable Long id) {
+        return ablesungRepository.findByZaehlerId(id);
     }
 
     @PutMapping("/{id}")
     Ablesung replaceAblesung(@RequestBody Ablesung newAblesung, @PathVariable Long id) {
-        return repository.findById(id)
+        return ablesungRepository.findById(id)
                 .map(ablesung -> {
                     ablesung.setZaehlerNr(newAblesung.getZaehlerNr());
                     ablesung.setZaehlerstand(newAblesung.getZaehlerstand());
                     ablesung.setDatum(newAblesung.getDatum());
-                    return repository.save(ablesung);
+                    return ablesungRepository.save(ablesung);
                 })
                 .orElseGet(() -> {
                     newAblesung.setId(id);
-                    return repository.save(newAblesung);
+                    return ablesungRepository.save(newAblesung);
                 });
     }
 
     // tag::delete[]
     @DeleteMapping("/{id}")
     void deleteAblesung(@PathVariable Long id) {
-        repository.deleteById(id);
+        ablesungRepository.deleteById(id);
     }
     // end::delete[]
 }

@@ -1,59 +1,80 @@
-<script>
-import axios from 'axios'
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-export default {
-  data() {
-    return {
-      zaehlerList: [],
-      selectedZaehler: null,
-      ablesungen: []
-    }
-  },
-  async created() {
-    const response = await axios.get('/api/zaehler')
-    this.zaehlerList = response.data
-  },
-  methods: {
-    async fetchAblesungen() {
-      if (this.selectedZaehler) {
-        const response = await axios.get(`/api/ablesungen/zaehler/${this.selectedZaehler.zaehlerNr}`)
-        this.ablesungen = response.data.map(ablesung => ({
-          ...ablesung,
-          editMode: false,
-          tempZaehlerstand: ablesung.zaehlerstand,
-          tempDatum: ablesung.datum
-        }))
-        this.ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
-      }
-    },
-    startEditing(ablesung) {
-      ablesung.editMode = true
-    },
-    async confirmEditing(ablesung) {
-      ablesung.editMode = false
-      ablesung.zaehlerstand = ablesung.tempZaehlerstand
-      ablesung.datum = ablesung.tempDatum
-      await this.updateAblesung(ablesung)
-    },
-    async updateAblesung(ablesung) {
-      await axios.put(`/api/ablesungen/${ablesung.id}`, ablesung)
-    },
-    formatDate(value) {
-      const date = new Date(value)
-      const day = date.getDate().toString().padStart(2, '0')
-      const month = (date.getMonth() + 1).toString().padStart(2, '0') // Monate beginnen bei 0 in JavaScript
-      const year = date.getFullYear()
-      return `${day}.${month}.${year}`
-    }
-  },
-}
+const zaehlerList = ref([]);
+const selectedZaehler = ref('');
+const ablesungen = ref([]);
+const newAblesung = ref({ zaehlerstand: '', datum: '', zaehler: '' }); // Neue ref für die neue Ablesung
+
+onMounted(async () => {
+  const response = await axios.get('/api/zaehler');
+  zaehlerList.value = response.data;
+});
+
+const fetchAblesungen = async () => {
+  if (selectedZaehler.value) {
+    console.log(selectedZaehler.value);
+    const response = await axios.get(`/api/ablesungen/zaehler/${selectedZaehler.value.id}`);
+    ablesungen.value = response.data.map(ablesung => ({
+      ...ablesung,
+      editMode: false,
+      tempZaehlerstand: ablesung.zaehlerstand,
+      tempDatum: ablesung.datum
+    }));
+    ablesungen.value.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+  }
+};
+
+const startEditing = (ablesung) => {
+  ablesung.editMode = true;
+};
+
+const confirmEditing = async (ablesung) => {
+  ablesung.editMode = false;
+  ablesung.zaehlerstand = ablesung.tempZaehlerstand;
+  ablesung.datum = ablesung.tempDatum;
+  await updateAblesung(ablesung);
+};
+
+const updateAblesung = async (ablesung) => {
+  await axios.put(`/api/ablesungen/${ablesung.id}`, ablesung);
+};
+
+const deleteAblesung = async (ablesung) => {
+  if (window.confirm('Sicher, dass du diese Ablesung löschen möchtest?')) {
+    await axios.delete(`/api/ablesungen/${ablesung.id}`);
+    const index = ablesungen.value.findIndex(item => item.id === ablesung.id);
+    ablesungen.value.splice(index, 1);
+  }
+};
+
+const createAblesung = async () => {
+  newAblesung.value.zaehler = selectedZaehler.value;
+  const response = await axios.post('/api/ablesungen', newAblesung.value);
+  ablesungen.value.push(response.data);
+  newAblesung.value = { zaehlerstand: '', datum: '', zaehler: '' };
+};
+
+const formatDate = (value) => {
+  const date = new Date(value);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+};
+
+const formatZaehlerstand = (zaehlerstand) => {
+  const userLocale = navigator.language || 'de-DE';
+  return new Intl.NumberFormat(userLocale).format(zaehlerstand);
+};
 </script>
-
 <template>
   <div class="ablesungen">
     <select class="form-select" v-model="selectedZaehler" @change="fetchAblesungen">
+      <option disabled selected value="">Zähler wählen</option>
       <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
-        {{ zaehler.zaehlerNr }}
+        {{ zaehler.zaehlerNr }} - {{ zaehler.zaehlerName }}
       </option>
     </select>
     <table class="table mt-3">
@@ -73,18 +94,30 @@ export default {
           <span v-else>{{ formatDate(ablesung.datum) }}</span>
         </td>
         <td>
-          <input type="text" class="form-control-sm edit-input" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
-          <span v-else>{{ ablesung.zaehlerstand }}</span>
+          <input type="number" inputmode="numeric" class="form-control-sm edit-input" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
+          <span v-else>{{ formatZaehlerstand(ablesung.zaehlerstand) }}</span>
         </td>
         <td>
           <button v-if="!ablesung.editMode" class="btn btn-sm btn-primary" @click="startEditing(ablesung)">Bearbeiten</button>
           <button v-else class="btn btn-sm btn-success" @click="confirmEditing(ablesung)">Bestätigen</button>
+          <button @click="deleteAblesung(ablesung)" class="btn btn-sm btn-danger">Löschen</button> <!-- Neuer "Löschen"-Button -->
+        </td>
+      </tr>
+      <tr v-if="selectedZaehler['zaehlerNr']">
+        <td>{{ selectedZaehler['zaehlerNr'] }}</td>
+        <td><input type="date" id="newDatum" v-model="newAblesung.datum" class="form-control"/></td>
+        <td>
+          <input type="number" inputmode="numeric" id="newZaehlerstand" v-model="newAblesung.zaehlerstand" class="form-control"/>
+        </td>
+        <td>
+          <button type="submit" class="btn btn-primary" @click="createAblesung">Hinzufügen</button>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 </template>
+
 
 <style>
 .ablesungen {

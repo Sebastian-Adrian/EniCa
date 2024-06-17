@@ -17,9 +17,6 @@
             <RouterLink class="nav-link" to="/tarife">Tarife</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/ablesung">Ablesung</RouterLink>
-          </li>
-          <li class="nav-item">
             <RouterLink class="nav-link" to="/ablesungen">Ablesungen</RouterLink>
           </li>
         </ul>

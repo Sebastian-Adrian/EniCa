@@ -4,18 +4,21 @@ import axios from 'axios'
 
 const tarifeList = ref([])
 const selectedTarif = ref(null)
-const newTarif = ref({ tarifName: '', preisProKwh: '', grundpreis: ''})
+const zaehlerList = ref([]) // Neue ref für die Zählerliste
+const newTarif = ref({ tarifName: '', preisProKwh: '', grundpreis: '', zaehler: ''})
 
 onMounted(async () => {
   const response = await axios.get('/api/tarife')
   tarifeList.value = response.data
+  const responseZaehler = await axios.get('/api/zaehler') // Abrufen der Zählerdaten
+  zaehlerList.value = responseZaehler.data
 })
 
 const selectTarif = (tarif) => {
   selectedTarif.value = { ...tarif }
 }
 
-const saveTarif = async () => {
+const updateTarif = async () => {
   if (selectedTarif.value) {
     const response = await axios.put(`/api/tarife/${selectedTarif.value.id}`, selectedTarif.value)
     const index = tarifeList.value.findIndex(tarif => tarif.id === selectedTarif.value.id)
@@ -35,7 +38,7 @@ const deleteTarif = async (tarif) => {
 const createTarif = async () => {
   const response = await axios.post('/api/tarife', newTarif.value)
   tarifeList.value.push(response.data)
-  newTarif.value = { tarifName: '', preisProKwh: '', grundpreis: '' }
+  newTarif.value = { tarifName: '', preisProKwh: '', grundpreis: '', zaehler: ''}
 }
 
 </script>
@@ -49,27 +52,37 @@ const createTarif = async () => {
         <th>Bezeichnung</th>
         <th>Preis pro kWh</th>
         <th>Grundpreis</th>
+        <th>Zähler</th>
         <th>Aktionen</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="tarif in tarifeList" :key="tarif.id">
         <td>
-          <input v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName" class="form-control"/>
+          <input type="text" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName" class="form-control"/>
           <span v-else>{{ tarif.tarifName }}</span>
         </td>
         <td>
-          <input v-if="selectedTarif && selectedTarif.id === tarif.id"
+          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
                  v-model="selectedTarif.preisProKwh"
                  class="form-control"/>
           <span v-else>{{ tarif.preisProKwh }}</span>
         </td>
         <td>
-          <input v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.grundpreis" class="form-control"/>
+          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.grundpreis" class="form-control"/>
           <span v-else>{{ tarif.grundpreis }}</span>
         </td>
+
         <td>
-          <button v-if="selectedTarif && selectedTarif.id === tarif.id" @click="saveTarif" class="btn btn-primary">Speichern</button>
+          <select v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.zaehler" class="form-control">
+            <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
+              {{ zaehler.zaehlerNr }}
+            </option>
+          </select>
+          <span v-else>{{ tarif.zaehler.zaehlerNr }}</span>
+        </td>
+        <td>
+          <button v-if="selectedTarif && selectedTarif.id === tarif.id" @click="updateTarif" class="btn btn-primary">Speichern</button>
           <button v-else @click="selectTarif(tarif)" class="btn btn-secondary">Bearbeiten</button>
           <button @click="deleteTarif(tarif)" class="btn btn-danger">Löschen</button>
         </td>
@@ -78,6 +91,13 @@ const createTarif = async () => {
         <td><input v-model="newTarif.tarifName" class="form-control"/></td>
         <td><input v-model="newTarif.preisProKwh" class="form-control"/></td>
         <td><input v-model="newTarif.grundpreis" class="form-control"/></td>
+        <td>
+          <select v-model="newTarif.zaehler" class="form-control">
+            <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
+              {{ zaehler.zaehlerNr }}
+            </option>
+          </select>
+        </td>
         <td><button @click="createTarif" class="btn btn-primary">Erstellen</button></td>
       </tr>
       </tbody>

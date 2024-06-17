@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AblesungRepository extends JpaRepository<Ablesung, Long> {
-    List<Ablesung> findByZaehlerNr(int zaehlerNr);
+    List<Ablesung> findByZaehlerId(long id);
 }

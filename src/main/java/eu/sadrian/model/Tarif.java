@@ -1,8 +1,6 @@
 package eu.sadrian.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Tarif {
@@ -14,13 +12,26 @@ public class Tarif {
     private double preisProKwh;
     private double grundpreis;
 
+    @ManyToOne
+    @JoinColumn(name = "zaehler_id", nullable = false)
+    private Zaehler zaehler;
+
     public Tarif() {
     }
 
-    public Tarif(String tarifName, double preisProKwh, double grundpreis) {
+    public Tarif(String tarifName, double preisProKwh, double grundpreis, Zaehler zaehler) {
         this.tarifName = tarifName;
         this.preisProKwh = preisProKwh;
         this.grundpreis = grundpreis;
+        this.zaehler = zaehler;
+    }
+
+    public Zaehler getZaehler() {
+        return zaehler;
+    }
+
+    public void setZaehler(Zaehler zaehler) {
+        this.zaehler = zaehler;
     }
 
     public String getTarifName() {

@@ -1,8 +1,6 @@
 package eu.sadrian.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -16,11 +14,22 @@ public class Ablesung {
     private int zaehlerstand;
     private String datum;
 
+    @ManyToOne
+    @JoinColumn(name = "zaehler_id", nullable = false)
+    private Zaehler zaehler;
+
     public Ablesung() {
     }
 
+    public Zaehler getZaehler() {
+        return zaehler;
+    }
+
+    public void setZaehler(Zaehler zaehler) {
+        this.zaehler = zaehler;
+    }
+
     public Ablesung(int zaehlerNr, int zaehlerstand, String datum) {
-        this.zaehlerNr = zaehlerNr;
         this.zaehlerstand = zaehlerstand;
         this.datum = datum;
     }
