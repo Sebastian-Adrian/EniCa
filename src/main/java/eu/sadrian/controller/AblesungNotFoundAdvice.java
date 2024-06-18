@@ -1,5 +1,6 @@
 package eu.sadrian.controller;
 
+import eu.sadrian.exception.AblesungNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;

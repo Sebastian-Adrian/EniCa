@@ -11,9 +11,42 @@ import java.util.List;
 
 @Repository
 public interface TarifRepository extends JpaRepository<Tarif, Long> {
-    // Methode zum Überprüfen von überschneidenden Gültigkeitszeiträumen für Tarife des Zählers
-    @Query("SELECT t FROM Tarif t WHERE t.zaehler.id = :zaehlerId AND " +
-            "(t.gueltigVon < :gueltigBis AND t.gueltigBis > :gueltigVon)")
+
+    /**
+     * Findet Tarife, die den angegebenen Gültigkeitszeitraum überlappen,
+     * schließt jedoch den Tarif mit der angegebenen ID aus.
+     *
+     * @param zaehlerId Die ID des Zählers, zu dem die Tarife gehören.
+     * @param gueltigVon Das Anfangsdatum des Gültigkeitszeitraums.
+     * @param gueltigBis Das Enddatum des Gültigkeitszeitraums.
+     * @param tarifId Die ID des zu ändernden Tarifs, der ausgeschlossen werden soll.
+     * @return Eine Liste von Tarifen, die den angegebenen Zeitraum überlappen.
+     */
+    @Query("SELECT t FROM Tarif t WHERE t.zaehler.id = :zaehlerId " +
+            "AND t.id <> :tarifId " +
+            "AND (t.gueltigVon BETWEEN :gueltigVon AND :gueltigBis " +
+            "OR t.gueltigBis BETWEEN :gueltigVon AND :gueltigBis " +
+            "OR :gueltigVon BETWEEN t.gueltigVon AND t.gueltigBis " +
+            "OR :gueltigBis BETWEEN t.gueltigVon AND t.gueltigBis)")
+    List<Tarif> findOverlappingTarife(@Param("zaehlerId") Long zaehlerId,
+                                      @Param("gueltigVon") LocalDate gueltigVon,
+                                      @Param("gueltigBis") LocalDate gueltigBis,
+                                      @Param("tarifId") Long tarifId);
+
+    /**
+     * Findet Tarife, die den angegebenen Gültigkeitszeitraum überlappen.
+     * Diese Methode wird verwendet, wenn ein neuer Tarif erstellt wird und keine Tarif-ID vorhanden ist.
+     *
+     * @param zaehlerId Die ID des Zählers, zu dem die Tarife gehören.
+     * @param gueltigVon Das Anfangsdatum des Gültigkeitszeitraums.
+     * @param gueltigBis Das Enddatum des Gültigkeitszeitraums.
+     * @return Eine Liste von Tarifen, die den angegebenen Zeitraum überlappen.
+     */
+    @Query("SELECT t FROM Tarif t WHERE t.zaehler.id = :zaehlerId " +
+            "AND (t.gueltigVon BETWEEN :gueltigVon AND :gueltigBis " +
+            "OR t.gueltigBis BETWEEN :gueltigVon AND :gueltigBis " +
+            "OR :gueltigVon BETWEEN t.gueltigVon AND t.gueltigBis " +
+            "OR :gueltigBis BETWEEN t.gueltigVon AND t.gueltigBis)")
     List<Tarif> findOverlappingTarife(@Param("zaehlerId") Long zaehlerId,
                                       @Param("gueltigVon") LocalDate gueltigVon,
                                       @Param("gueltigBis") LocalDate gueltigBis);

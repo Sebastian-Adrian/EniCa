@@ -1,6 +1,4 @@
-package eu.sadrian.controller;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+package eu.sadrian.exception;
 
 public class ZaehlerNotFoundException extends RuntimeException {
     public ZaehlerNotFoundException(Long id) {

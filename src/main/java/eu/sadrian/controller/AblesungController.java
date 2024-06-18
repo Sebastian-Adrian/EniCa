@@ -1,5 +1,7 @@
 package eu.sadrian.controller;
 
+import eu.sadrian.exception.AblesungNotFoundException;
+import eu.sadrian.exception.ZaehlerNotFoundException;
 import eu.sadrian.model.Ablesung;
 import eu.sadrian.model.Zaehler;
 import eu.sadrian.repository.AblesungRepository;
