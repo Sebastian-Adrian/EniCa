@@ -2,8 +2,8 @@ package eu.sadrian.controller;
 
 import eu.sadrian.model.Tarif;
 import eu.sadrian.model.Zaehler;
-import eu.sadrian.repository.TarifRepository;
 import eu.sadrian.repository.ZaehlerRepository;
+import eu.sadrian.service.TarifService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,17 +12,17 @@ import java.util.List;
 @RequestMapping("/api/tarife")
 public class TarifController {
 
-    private final TarifRepository tarifRepository;
+    private final TarifService tarifService;
     private final ZaehlerRepository zaehlerRepository;
 
-    public TarifController(TarifRepository tarifRepository, ZaehlerRepository zaehlerRepository) {
-        this.tarifRepository = tarifRepository;
+    public TarifController(TarifService tarifService, ZaehlerRepository zaehlerRepository) {
+        this.tarifService = tarifService;
         this.zaehlerRepository = zaehlerRepository;
     }
 
     @GetMapping()
     List<Tarif> all() {
-        return tarifRepository.findAll();
+        return tarifService.findAll();
     }
 
     @PostMapping()
@@ -32,27 +32,16 @@ public class TarifController {
         Zaehler zaehler = zaehlerRepository.findById(id)
                 .orElseThrow(() -> new ZaehlerNotFoundException(id));
 
-        newTarif.setZaehler(zaehler);
-
-        return tarifRepository.save(newTarif);
+        return tarifService.addTarif(zaehler, newTarif.getGueltigVon(), newTarif.getGueltigBis(), newTarif);
     }
 
     @PutMapping("/{id}")
     Tarif replaceTarif(@RequestBody Tarif newTarif, @PathVariable Long id) {
-        return tarifRepository.findById(id)
-                .map(tarif -> {
-                    tarif.setTarifName(newTarif.getTarifName());
-                    tarif.setPreisProKwh(newTarif.getPreisProKwh());
-                    tarif.setGrundpreis(newTarif.getGrundpreis());
-                    return tarifRepository.save(tarif);
-                })
-                .orElseGet(() -> {
-                    newTarif.setId(id);
-                    return tarifRepository.save(newTarif);
-                });
+        return tarifService.updateTarif(id, newTarif);
     }
+
     @DeleteMapping("/{id}")
-        void deleteTarif(@PathVariable Long id) {
-        tarifRepository.deleteById(id);
+    void deleteTarif(@PathVariable Long id) {
+        tarifService.deleteTarif(id);
     }
 }

@@ -65,7 +65,6 @@ public class AblesungController {
     Ablesung replaceAblesung(@RequestBody Ablesung newAblesung, @PathVariable Long id) {
         return ablesungRepository.findById(id)
                 .map(ablesung -> {
-                    ablesung.setZaehlerNr(newAblesung.getZaehlerNr());
                     ablesung.setZaehlerstand(newAblesung.getZaehlerstand());
                     ablesung.setDatum(newAblesung.getDatum());
                     return ablesungRepository.save(ablesung);

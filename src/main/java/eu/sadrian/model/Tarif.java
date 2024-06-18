@@ -2,6 +2,8 @@ package eu.sadrian.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+
 @Entity
 public class Tarif {
 
@@ -16,14 +18,35 @@ public class Tarif {
     @JoinColumn(name = "zaehler_id", nullable = false)
     private Zaehler zaehler;
 
+    private LocalDate gueltigVon;
+    private LocalDate gueltigBis;
+
     public Tarif() {
     }
 
-    public Tarif(String tarifName, double preisProKwh, double grundpreis, Zaehler zaehler) {
+    public LocalDate getGueltigVon() {
+        return gueltigVon;
+    }
+
+    public void setGueltigVon(LocalDate gueltigVon) {
+        this.gueltigVon = gueltigVon;
+    }
+
+    public LocalDate getGueltigBis() {
+        return gueltigBis;
+    }
+
+    public void setGueltigBis(LocalDate gueltigBis) {
+        this.gueltigBis = gueltigBis;
+    }
+
+    public Tarif(String tarifName, double preisProKwh, double grundpreis, Zaehler zaehler, LocalDate gueltigVon, LocalDate gueltigBis) {
         this.tarifName = tarifName;
         this.preisProKwh = preisProKwh;
         this.grundpreis = grundpreis;
         this.zaehler = zaehler;
+        this.gueltigVon = gueltigVon;
+        this.gueltigBis = gueltigBis;
     }
 
     public Zaehler getZaehler() {

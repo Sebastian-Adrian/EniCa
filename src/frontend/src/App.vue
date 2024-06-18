@@ -19,6 +19,9 @@
           <li class="nav-item">
             <RouterLink class="nav-link" to="/ablesungen">Ablesungen</RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/kosten">Kosten</RouterLink>
+          </li>
         </ul>
       </div>
     </div>

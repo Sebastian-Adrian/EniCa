@@ -10,7 +10,6 @@ public class Ablesung {
     @Id
     @GeneratedValue
     private Long id;
-    private int zaehlerNr;
     private int zaehlerstand;
     private String datum;
 
@@ -29,7 +28,7 @@ public class Ablesung {
         this.zaehler = zaehler;
     }
 
-    public Ablesung(int zaehlerNr, int zaehlerstand, String datum) {
+    public Ablesung(int zaehlerstand, String datum) {
         this.zaehlerstand = zaehlerstand;
         this.datum = datum;
     }
@@ -40,14 +39,6 @@ public class Ablesung {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public int getZaehlerNr() {
-        return zaehlerNr;
-    }
-
-    public void setZaehlerNr(int zaehlerNr) {
-        this.zaehlerNr = zaehlerNr;
     }
 
     public int getZaehlerstand() {
@@ -70,7 +61,6 @@ public class Ablesung {
     public String toString() {
         return "Ablesung{" +
                 "id=" + id +
-                ", zaehlerNr=" + zaehlerNr +
                 ", zaehlerstand=" + zaehlerstand +
                 ", datum='" + datum + '\'' +
                 '}';
@@ -83,7 +73,6 @@ public class Ablesung {
 
         Ablesung ablesung = (Ablesung) o;
 
-        if (zaehlerNr != ablesung.zaehlerNr) return false;
         if (zaehlerstand != ablesung.zaehlerstand) return false;
         if (!Objects.equals(id, ablesung.id)) return false;
         return Objects.equals(datum, ablesung.datum);
@@ -91,6 +80,6 @@ public class Ablesung {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id, this.zaehlerNr, this.zaehlerstand, this.datum);
+        return Objects.hash(this.id, this.zaehlerstand, this.datum);
     }
 }

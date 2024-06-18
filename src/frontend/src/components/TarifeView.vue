@@ -5,7 +5,7 @@ import axios from 'axios'
 const tarifeList = ref([])
 const selectedTarif = ref(null)
 const zaehlerList = ref([]) // Neue ref für die Zählerliste
-const newTarif = ref({ tarifName: '', preisProKwh: '', grundpreis: '', zaehler: ''})
+const newTarif = ref({ tarifName: '', preisProKwh: '', grundpreis: '', zaehler: '', gueltigVon: '', gueltigBis: ''})
 
 onMounted(async () => {
   const response = await axios.get('/api/tarife')
@@ -38,7 +38,7 @@ const deleteTarif = async (tarif) => {
 const createTarif = async () => {
   const response = await axios.post('/api/tarife', newTarif.value)
   tarifeList.value.push(response.data)
-  newTarif.value = { tarifName: '', preisProKwh: '', grundpreis: '', zaehler: ''}
+  newTarif.value = { tarifName: '', preisProKwh: '', grundpreis: '', zaehler: '', gueltigVon: '', gueltigBis: ''}
 }
 
 </script>
@@ -52,6 +52,8 @@ const createTarif = async () => {
         <th>Bezeichnung</th>
         <th>Preis pro kWh</th>
         <th>Grundpreis</th>
+        <th>Gültig ab</th>
+        <th>Gültig bis</th>
         <th>Zähler</th>
         <th>Aktionen</th>
       </tr>
@@ -59,22 +61,29 @@ const createTarif = async () => {
       <tbody>
       <tr v-for="tarif in tarifeList" :key="tarif.id">
         <td>
-          <input type="text" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName" class="form-control"/>
+          <input type="text" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName" class="form-control-sm"/>
           <span v-else>{{ tarif.tarifName }}</span>
         </td>
         <td>
           <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
                  v-model="selectedTarif.preisProKwh"
-                 class="form-control"/>
+                 class="form-control-sm"/>
           <span v-else>{{ tarif.preisProKwh }}</span>
         </td>
         <td>
-          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.grundpreis" class="form-control"/>
+          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.grundpreis" class="form-control-sm"/>
           <span v-else>{{ tarif.grundpreis }}</span>
         </td>
-
         <td>
-          <select v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.zaehler" class="form-control">
+          <input type="date" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.gueltigVon" class="form-control-sm"/>
+          <span v-else>{{ tarif.gueltigVon }}</span>
+        </td>
+        <td>
+          <input type="date" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.gueltigBis" class="form-control-sm"/>
+          <span v-else>{{ tarif.gueltigBis }}</span>
+        </td>
+        <td>
+          <select v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.zaehler" class="form-control-sm">
             <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
               {{ zaehler.zaehlerNr }}
             </option>
@@ -88,11 +97,13 @@ const createTarif = async () => {
         </td>
       </tr>
       <tr>
-        <td><input v-model="newTarif.tarifName" class="form-control"/></td>
-        <td><input v-model="newTarif.preisProKwh" class="form-control"/></td>
-        <td><input v-model="newTarif.grundpreis" class="form-control"/></td>
+        <td><input v-model="newTarif.tarifName" class="form-control-sm"/></td>
+        <td><input v-model="newTarif.preisProKwh" class="form-control-sm"/></td>
+        <td><input v-model="newTarif.grundpreis" class="form-control-sm"/></td>
+        <td><input type="date" v-model="newTarif.gueltigVon" class="form-control-sm"/></td>
+        <td><input type="date" v-model="newTarif.gueltigBis" class="form-control-sm"/></td>
         <td>
-          <select v-model="newTarif.zaehler" class="form-control">
+          <select v-model="newTarif.zaehler" class="form-control-sm">
             <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
               {{ zaehler.zaehlerNr }}
             </option>
@@ -109,11 +120,6 @@ const createTarif = async () => {
 
 .tarife {
   margin-top: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 
 </style>
