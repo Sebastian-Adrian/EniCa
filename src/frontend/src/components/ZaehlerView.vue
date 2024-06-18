@@ -63,7 +63,7 @@ const getZaehlerArtClass = (zaehlerArt) => {
 
 const fetchLatestZaehlerstand = async () => {
   for (const zaehler of zaehlerList.value) {
-    const response = await axios.get(`/api/ablesungen/zaehler/${zaehler.zaehlerNr}`)
+    const response = await axios.get(`/api/ablesungen/zaehler/${zaehler.id}`)
     const ablesungen = response.data
     if (ablesungen.length > 0) {
       ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
@@ -117,7 +117,7 @@ onMounted(async () => {
         <td>
           <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span>
         </td>
-        <td>
+        <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
           <button v-if="selectedZaehler && selectedZaehler.id" @click="saveZaehler" class="btn btn-primary">Speichern</button>
           <button v-else @click="selectZaehler(zaehler)" class="btn btn-secondary">Bearbeiten</button>
           <button @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>

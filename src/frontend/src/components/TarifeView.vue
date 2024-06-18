@@ -72,6 +72,14 @@ const createTarif = async () => {
   }
 }
 
+const isTarifGueltig = (tarif) => {
+  const heute = new Date()
+  const gueltigVon = new Date(tarif.gueltigVon)
+  const gueltigBis = new Date(tarif.gueltigBis)
+
+  return heute >= gueltigVon && heute <= gueltigBis
+}
+
 </script>
 
 <template>
@@ -96,17 +104,19 @@ const createTarif = async () => {
           <input type="text" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName"
                  class="form-control-sm"/>
           <span v-else>{{ tarif.tarifName }}</span>
+          <span v-if="isTarifGueltig(tarif)" class="badge bg-success">Aktuell</span>
+          <span v-else class="badge bg-secondary">Abgelaufen</span>
         </td>
         <td>
           <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
                  v-model="selectedTarif.preisProKwh"
                  class="form-control-sm"/>
-          <span v-else>{{ tarif.preisProKwh }}</span>
+          <span v-else>{{ tarif.preisProKwh }} €</span>
         </td>
         <td>
           <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
                  v-model="selectedTarif.grundpreis" class="form-control-sm"/>
-          <span v-else>{{ tarif.grundpreis }}</span>
+          <span v-else>{{ tarif.grundpreis }} €</span>
         </td>
         <td>
           <input type="date" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.gueltigVon"
@@ -127,12 +137,13 @@ const createTarif = async () => {
           </select>
           <span v-else>{{ tarif.zaehler.zaehlerNr }}</span>
         </td>
-        <td>
+        <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
           <button v-if="selectedTarif && selectedTarif.id === tarif.id" @click="updateTarif" class="btn btn-sm btn-primary">
             Speichern
           </button>
           <button v-else @click="selectTarif(tarif)" class="btn btn-sm btn-secondary">Bearbeiten</button>
           <button @click="deleteTarif(tarif)" class="btn btn-sm btn-danger">Löschen</button>
+
         </td>
       </tr>
       <tr>
@@ -148,8 +159,8 @@ const createTarif = async () => {
             </option>
           </select>
         </td>
-        <td>
-          <button @click="createTarif" class="btn btn-sm btn-primary">Erstellen</button>
+        <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
+          <button @click="createTarif" class="btn btn-primary">Erstellen</button>
         </td>
       </tr>
       </tbody>
@@ -161,4 +172,9 @@ const createTarif = async () => {
 .tarife {
   margin-top: 20px;
 }
+
+.badge {
+  margin-left: 5px;
+}
+
 </style>

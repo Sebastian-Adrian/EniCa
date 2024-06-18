@@ -97,7 +97,7 @@ const formatZaehlerstand = (zaehlerstand) => {
           <input type="number" inputmode="numeric" class="form-control-sm edit-input" v-if="ablesung.editMode" v-model="ablesung.tempZaehlerstand" />
           <span v-else>{{ formatZaehlerstand(ablesung.zaehlerstand) }}</span>
         </td>
-        <td>
+        <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
           <button v-if="!ablesung.editMode" class="btn btn-sm btn-primary" @click="startEditing(ablesung)">Bearbeiten</button>
           <button v-else class="btn btn-sm btn-success" @click="confirmEditing(ablesung)">Bestätigen</button>
           <button @click="deleteAblesung(ablesung)" class="btn btn-sm btn-danger">Löschen</button> <!-- Neuer "Löschen"-Button -->
@@ -105,11 +105,11 @@ const formatZaehlerstand = (zaehlerstand) => {
       </tr>
       <tr v-if="selectedZaehler['zaehlerNr']">
         <td>{{ selectedZaehler['zaehlerNr'] }}</td>
-        <td><input type="date" id="newDatum" v-model="newAblesung.datum" class="form-control"/></td>
+        <td><input type="date" id="newDatum" v-model="newAblesung.datum" class="form-control-sm"/></td>
         <td>
-          <input type="number" inputmode="numeric" id="newZaehlerstand" v-model="newAblesung.zaehlerstand" class="form-control"/>
+          <input type="number" inputmode="numeric" id="newZaehlerstand" v-model="newAblesung.zaehlerstand" class="form-control-sm"/>
         </td>
-        <td>
+        <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
           <button type="submit" class="btn btn-primary" @click="createAblesung">Hinzufügen</button>
         </td>
       </tr>
