@@ -8,11 +8,16 @@ const selectedZaehler = ref(null)
 const zaehlerstandMap = ref({})
 const newZaehler = ref({ zaehlerNr: '', zaehlerArt: '', zaehlerName: ''})
 const zaehlerArtOptions = ref(['GAS', 'WASSER', 'STROM']);
-const showNewZaehlerForm = ref(false)
+
+const errorMessage = ref('')
 
 onMounted(async () => {
-  const response = await axios.get('/api/zaehler')
-  zaehlerList.value = response.data
+  try {
+    const response = await axios.get('/api/zaehler')
+    zaehlerList.value = response.data
+  } catch (error) {
+    errorMessage.value = `Es gab einen Fehler beim Abrufen der Zähler: ${error.message}`
+  }
 })
 
 const selectZaehler = (zaehler) => {
@@ -21,33 +26,39 @@ const selectZaehler = (zaehler) => {
 
 const saveZaehler = async () => {
   if (selectedZaehler.value) {
-    const response = await axios.put(`/api/zaehler/${selectedZaehler.value.id}`, selectedZaehler.value)
-    const index = zaehlerList.value.findIndex(zaehler => zaehler.id === selectedZaehler.value.id)
-    zaehlerList.value.splice(index, 1, response.data)
+    try {
+      const response = await axios.put(`/api/zaehler/${selectedZaehler.value.id}`, selectedZaehler.value)
+      const index = zaehlerList.value.findIndex(zaehler => zaehler.id === selectedZaehler.value.id)
+      zaehlerList.value.splice(index, 1, response.data)
+    } catch (error) {
+      errorMessage.value = `Es gab einen Fehler beim Speichern des Zählers: ${error.message}`
+    }
     selectedZaehler.value = null
   }
 }
 
 const deleteZaehler = async (zaehler) => {
   if (window.confirm('sicher, dass du diesen Zähler löschen möchtest?')) {
-    await axios.delete(`/api/zaehler/${zaehler.id}`)
-    const index = zaehlerList.value.findIndex(item => item.id === zaehler.id)
-    zaehlerList.value.splice(index, 1)
+    try {
+      await axios.delete(`/api/zaehler/${zaehler.id}`)
+      const index = zaehlerList.value.findIndex(item => item.id === zaehler.id)
+      zaehlerList.value.splice(index, 1)
+    } catch (error) {
+      errorMessage.value = `Es gab einen Fehler beim Löschen des Zählers: ${error.message}`
+    }
   }
 }
 
 const createZaehler = async () => {
-  const response = await axios.post('/api/zaehler', newZaehler.value)
-  zaehlerList.value.push(response.data)
-  newZaehler.value = { zaehlerNr: '', zaehlerArt: '', zaehlerName: ''}
-  showNewZaehlerForm.value = false // Formular verbergen
+  try {
+    const response = await axios.post('/api/zaehler', newZaehler.value)
+    zaehlerList.value.push(response.data)
+    newZaehler.value = { zaehlerNr: '', zaehlerArt: '', zaehlerName: '' }
+  } catch (error) {
+    errorMessage.value = `Es gab einen Fehler beim Erstellen des Zählers: ${error.message}`
+  }
 }
 
-/*
-const toggleNewZaehlerForm = () => {
-  showNewZaehlerForm.value = !showNewZaehlerForm.value
-}
-*/
 const getZaehlerArtClass = (zaehlerArt) => {
   switch (zaehlerArt) {
     case 'GAS':
@@ -75,9 +86,12 @@ const fetchLatestZaehlerstand = async () => {
 }
 
 onMounted(async () => {
-  const response = await axios.get('/api/zaehler')
-  zaehlerList.value = response.data
-  await fetchLatestZaehlerstand()
+
+  if (zaehlerList.value.length > 0) {
+    const response = await axios.get('/api/zaehler')
+    zaehlerList.value = response.data
+    await fetchLatestZaehlerstand()
+  }
 })
 
 </script>
@@ -86,6 +100,8 @@ onMounted(async () => {
 
   <div class="zaehler p-3 border rounded">
     <h3>Zähler</h3>
+    <!-- Fehlermeldung anzeigen, wenn errorMessage nicht null ist -->
+    <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
     <table class="table">
       <thead>
       <tr>
@@ -120,7 +136,8 @@ onMounted(async () => {
         <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
           <button v-if="selectedZaehler && selectedZaehler.id" @click="saveZaehler" class="btn btn-primary">Speichern</button>
           <button v-else @click="selectZaehler(zaehler)" class="btn btn-secondary">Bearbeiten</button>
-          <button @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>
+          <button v-if="!selectedZaehler" @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>
+          <button v-else @click="selectedZaehler = null" class="btn btn-secondary">Abbrechen</button>
         </td>
       </tr>
       <tr>
@@ -133,73 +150,15 @@ onMounted(async () => {
             </option>
           </select>
         </td>
-
         <td><button @click="createZaehler" class="btn btn-primary">Erstellen</button></td>
       </tr>
       </tbody>
     </table>
-
   </div>
 
-<!--  <div class="zaehler"><h3>Zähler</h3>
-    <ul class="list-group">
-      <li v-for="zaehler in zaehlerList" :key="zaehler.id" class="list-group-item">
-        {{ zaehler.zaehlerNr }} - {{ zaehler.zaehlerName }} – <span :class="getZaehlerArtClass(zaehler.zaehlerArt)">{{ zaehler.zaehlerArt }}</span>
-        <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span> &lt;!&ndash; Letzten Zählerstand anzeigen &ndash;&gt;
-        <button class="btn btn-primary float-end btn-sm" @click="selectZaehler(zaehler)">Bearbeiten</button>
-        <button class="btn btn-danger float-end me-2 btn-sm" @click="deleteZaehler(zaehler)">Löschen</button>
-      </li>
-    </ul>
-
-    <div v-if="selectedZaehler" class="mt-3">
-      <h4>Zähler bearbeiten</h4>
-      <form @submit.prevent="saveZaehler">
-        <div class="mb-3">
-          <label for="zaehlerNr" class="form-label">Zähler Nr</label>
-          <input type="number" id="zaehlerNr" v-model="selectedZaehler.zaehlerNr" class="form-control"/>
-        </div>
-        <div class="mb-3">
-          <label for="zaehlerArt" class="form-label">Zähler Art</label>
-          <select id="zaehlerArt" v-model="selectedZaehler.zaehlerArt" class="form-control">
-            <option v-for="option in zaehlerArtOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Speichern</button>
-      </form>
-    </div>
-
-    <button class="btn btn-primary mt-3" @click="toggleNewZaehlerForm">Neuen Zähler erstellen</button>
-    <div v-if="showNewZaehlerForm" class="mt-3">
-      <h4>Neuen Zähler erstellen</h4>
-      <form @submit.prevent="createZaehler">
-        <div class="mb-3">
-          <label for="newZaehlerNr" class="form-label">Zähler Nr</label>
-          <input type="number" id="newZaehlerNr" v-model="newZaehler.zaehlerNr" class="form-control"/>
-        </div>
-        <div class="mb-3">
-          <label for="newZaehlerName" class="form-label">Name</label>
-          <input type="text" id="newZaehlerName" v-model="newZaehler.zaehlerName" class="form-control"/>
-        </div>
-        <div class="mb-3">
-          <label for="newZaehlerArt" class="form-label">Zähler Art</label>
-          <select id="newZaehlerArt" v-model="newZaehler.zaehlerArt" class="form-control">
-            <option v-for="option in zaehlerArtOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Erstellen</button>
-      </form>
-    </div>
-  </div>-->
 </template>
 
 <style scoped>
-.list-group-item {
-  position: relative;
-}
 
 .zaehler {
   margin-top: 20px;
