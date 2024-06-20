@@ -51,7 +51,7 @@ const updateTarif = async (tarif) => {
       tarifeList.value.splice(index, 1, response.data)
     } catch (error) {
       if (error.response && error.response.data) {
-        errorMessage.value = error.response.data
+        errorMessage.value = await error.response.data
       } else {
         errorMessage.value = `Ein unbekannter Fehler ist aufgetreten. ${error.message}`
       }
@@ -91,7 +91,7 @@ const createTarif = async () => {
     errorMessage.value = ''
   } catch (error) {
     if (error.response && error.response.data) {
-      errorMessage.value = error.response.data
+      errorMessage.value = await error.response.data
     } else {
       errorMessage.value = `Ein unbekannter Fehler ist aufgetreten. ${error.message}`
     }

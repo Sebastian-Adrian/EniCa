@@ -1,6 +1,7 @@
 package eu.sadrian.service;
 
 import eu.sadrian.exception.TarifUeberschneidungException;
+import eu.sadrian.exception.ZaehlerNotFoundException;
 import eu.sadrian.model.Tarif;
 import eu.sadrian.repository.TarifRepository;
 import org.springframework.stereotype.Service;
@@ -84,4 +85,7 @@ public class TarifService {
         }
     }
 
+    public List<Tarif> findAllByZaehler(Long id) {
+       return tarifRepository.findAllByZaehlerId(id);
+    }
 }

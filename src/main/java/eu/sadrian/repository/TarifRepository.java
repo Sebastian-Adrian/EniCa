@@ -50,5 +50,9 @@ public interface TarifRepository extends JpaRepository<Tarif, Long> {
     List<Tarif> findOverlappingTarife(@Param("zaehlerId") Long zaehlerId,
                                       @Param("gueltigVon") LocalDate gueltigVon,
                                       @Param("gueltigBis") LocalDate gueltigBis);
+
+    @Query("SELECT t FROM Tarif t WHERE t.zaehler.id = :zaehlerId")
+    List<Tarif> findAllByZaehlerId(@Param("zaehlerId") Long zaehlerId);
+
 }
 

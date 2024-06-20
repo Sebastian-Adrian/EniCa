@@ -29,6 +29,16 @@ public class TarifController {
         return tarifService.findAll();
     }
 
+    @GetMapping("/zaehler/{id}")
+    ResponseEntity<?> allByZaehlerId(@PathVariable Long id) {
+
+        try {
+            return new ResponseEntity<>(tarifService.findAllByZaehler(id), HttpStatus.OK);
+        } catch (ZaehlerNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PostMapping()
     ResponseEntity<?> newTarif(@RequestBody Tarif newTarif) {
         try {
