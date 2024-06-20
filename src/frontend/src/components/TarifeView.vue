@@ -107,6 +107,10 @@ const isTarifGueltig = (tarif) => {
   return heute >= gueltigVon && heute <= gueltigBis
 }
 
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString([],{ day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 </script>
 
 <template>
@@ -147,12 +151,12 @@ const isTarifGueltig = (tarif) => {
         <td>
           <input type="date" v-if="tarif.editMode" v-model="tarif.tempGueltigVon"
                  class="form-control-sm"/>
-          <span v-else>{{ new Date(tarif.gueltigVon).toLocaleDateString() }}</span>
+          <span v-else>{{ formatDate(tarif.gueltigVon) }}</span>
         </td>
         <td>
           <input type="date" v-if="tarif.editMode" v-model="tarif.tempGueltigBis"
                  class="form-control-sm"/>
-          <span v-else>{{ new Date(tarif.gueltigBis).toLocaleDateString() }}</span>
+          <span v-else>{{ formatDate(tarif.gueltigBis) }}</span>
         </td>
         <td>
           <select v-if="tarif.editMode" v-model="tarif.tempZaehler"

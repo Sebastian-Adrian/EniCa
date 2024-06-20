@@ -96,12 +96,8 @@ const createAblesung = async () => {
   }
 };
 
-const formatDate = (value) => {
-  const date = new Date(value);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString([],{ day: '2-digit', month: '2-digit', year: 'numeric' })
 };
 
 const formatZaehlerstand = (zaehlerstand) => {
