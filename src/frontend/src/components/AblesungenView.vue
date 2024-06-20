@@ -116,7 +116,7 @@ const formatZaehlerstand = (zaehlerstand) => {
         {{ zaehler.zaehlerNr }} - {{ zaehler.zaehlerName }}
       </option>
     </select>
-    <table class="table mt-3">
+    <table class="table table-sm table-striped">
       <thead>
       <tr>
         <th>Zählernummer</th>

@@ -85,11 +85,11 @@ const createZaehler = async () => {
 const getZaehlerArtClass = (zaehlerArt) => {
   switch (zaehlerArt) {
     case 'GAS':
-      return 'bg-secondary text-white p-1 border-dark rounded-pill badge'
+      return 'bg-secondary text-white border-dark rounded-pill badge'
     case 'WASSER':
-      return 'bg-primary text-white p-1 border-dark rounded-pill badge'
+      return 'bg-primary border-dark rounded-pill badge'
     case 'STROM':
-      return 'bg-warning text-white p-1 border-dark rounded-pill badge'
+      return 'bg-warning text-black border-dark rounded-pill badge'
     default:
       return ''
   }
@@ -121,7 +121,7 @@ const fetchLatestZaehlerstand = async () => {
     <h3>Zähler</h3>
     <!-- Fehlermeldung anzeigen, wenn errorMessage nicht null ist -->
     <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-    <table class="table">
+    <table class="table table-sm table-striped">
       <thead>
       <tr>
         <th>Zählernummer</th>
