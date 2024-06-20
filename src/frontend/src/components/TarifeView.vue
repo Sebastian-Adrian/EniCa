@@ -3,41 +3,59 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const tarifeList = ref([])
-const selectedTarif = ref(null)
-const zaehlerList = ref([]) // Neue ref für die Zählerliste
+const zaehlerList = ref([])
 const newTarif = ref({ tarifName: '', preisProKwh: '', grundpreis: '', zaehler: '', gueltigVon: '', gueltigBis: '' })
+
 const errorMessage = ref('')
 
 onMounted(async () => {
   try {
     const response = await axios.get('/api/tarife')
-    tarifeList.value = response.data
+    tarifeList.value = response.data.map(tarif => ({
+      ...tarif,
+      editMode: false,
+      tempTarifName: tarif.tarifName,
+      tempPreisProKwh: tarif.preisProKwh,
+      tempGrundpreis: tarif.grundpreis,
+      tempGueltigVon: tarif.gueltigVon,
+      tempGueltigBis: tarif.gueltigBis,
+      tempZaehler: tarif.zaehler
+    }));
     const responseZaehler = await axios.get('/api/zaehler') // Abrufen der Zählerdaten
     zaehlerList.value = responseZaehler.data
   } catch (error) {
+    errorMessage.value = `Fehler beim Abrufen der Daten: ${error.message}`
     console.error('Fehler beim Abrufen der Daten:', error)
   }
 })
 
-const selectTarif = (tarif) => {
-  selectedTarif.value = { ...tarif }
+const startEditing = (tarif) => {
+  tarif.editMode = true
 }
 
-const updateTarif = async () => {
-  if (selectedTarif.value) {
+const abortEditing = (tarif) => {
+  tarif.editMode = false
+  tarif.tempTarifName = tarif.tarifName
+  tarif.tempPreisProKwh = tarif.preisProKwh
+  tarif.tempGrundpreis = tarif.grundpreis
+  tarif.tempGueltigVon = tarif.gueltigVon
+  tarif.tempGueltigBis = tarif.gueltigBis
+  tarif.tempZaehler = tarif.zaehler
+}
+
+const updateTarif = async (tarif) => {
+  if (tarif) {
     try {
-      const response = await axios.put(`/api/tarife/${selectedTarif.value.id}`, selectedTarif.value)
-      const index = tarifeList.value.findIndex(tarif => tarif.id === selectedTarif.value.id)
+      const response = await axios.put(`/api/tarife/${tarif.id}`, tarif)
+      const index = tarifeList.value.findIndex(oldTarif => oldTarif.id === tarif.id)
       tarifeList.value.splice(index, 1, response.data)
-      selectedTarif.value = null
-      errorMessage.value = ''
     } catch (error) {
       if (error.response && error.response.data) {
         errorMessage.value = error.response.data
       } else {
-        errorMessage.value = 'Ein unbekannter Fehler ist aufgetreten.'
+        errorMessage.value = `Ein unbekannter Fehler ist aufgetreten. ${error.message}`
       }
-      console.error('Fehler beim Aktualisieren des Tarifs: ', errorMessage.value)
+      console.error('Fehler beim Aktualisieren des Tarifs: ', error)
     }
   }
 }
@@ -48,9 +66,8 @@ const deleteTarif = async (tarif) => {
       await axios.delete(`/api/tarife/${tarif.id}`)
       const index = tarifeList.value.findIndex(item => item.id === tarif.id)
       tarifeList.value.splice(index, 1)
-      errorMessage.value = ''
     } catch (error) {
-      errorMessage.value = 'Fehler beim Löschen des Tarifs.'
+      errorMessage.value = `Fehler beim Löschen des Tarifs: ${error.message}`
       console.error('Fehler beim Löschen des Tarifs:', error)
     }
   }
@@ -59,14 +76,24 @@ const deleteTarif = async (tarif) => {
 const createTarif = async () => {
   try {
     const response = await axios.post('/api/tarife', newTarif.value)
+
+    response.data.editMode = false
+    response.data.tempTarifName = response.data.tarifName
+    response.data.tempPreisProKwh = response.data.preisProKwh
+    response.data.tempGrundpreis = response.data.grundpreis
+    response.data.tempGueltigVon = response.data.gueltigVon
+    response.data.tempGueltigBis = response.data.gueltigBis
+    response.data.tempZaehler = response.data.zaehler
+
     tarifeList.value.push(response.data)
+
     newTarif.value = { tarifName: '', preisProKwh: '', grundpreis: '', zaehler: '', gueltigVon: '', gueltigBis: '' }
     errorMessage.value = ''
   } catch (error) {
     if (error.response && error.response.data) {
       errorMessage.value = error.response.data
     } else {
-      errorMessage.value = 'Ein unbekannter Fehler ist aufgetreten.'
+      errorMessage.value = `Ein unbekannter Fehler ist aufgetreten. ${error.message}`
     }
     console.error('Fehler beim Aktualisieren des Tarifs:', errorMessage.value)
   }
@@ -101,35 +128,34 @@ const isTarifGueltig = (tarif) => {
       <tbody>
       <tr v-for="tarif in tarifeList" :key="tarif.id">
         <td>
-          <input type="text" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.tarifName"
+          <input type="text" v-if="tarif.editMode" v-model="tarif.tempTarifName"
                  class="form-control-sm"/>
           <span v-else>{{ tarif.tarifName }}</span>
           <span v-if="isTarifGueltig(tarif)" class="badge bg-success">Aktuell</span>
           <span v-else class="badge bg-secondary">Abgelaufen</span>
         </td>
         <td>
-          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
-                 v-model="selectedTarif.preisProKwh"
+          <input type="number" inputmode="numeric" v-if="tarif.editMode" v-model="tarif.tempPreisProKwh"
                  class="form-control-sm"/>
           <span v-else>{{ tarif.preisProKwh }} €</span>
         </td>
         <td>
-          <input type="number" inputmode="numeric" v-if="selectedTarif && selectedTarif.id === tarif.id"
-                 v-model="selectedTarif.grundpreis" class="form-control-sm"/>
+          <input type="number" inputmode="numeric" v-if="tarif.editMode" v-model="tarif.tempGrundpreis"
+                 class="form-control-sm"/>
           <span v-else>{{ tarif.grundpreis }} €</span>
         </td>
         <td>
-          <input type="date" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.gueltigVon"
+          <input type="date" v-if="tarif.editMode" v-model="tarif.tempGueltigVon"
                  class="form-control-sm"/>
           <span v-else>{{ new Date(tarif.gueltigVon).toLocaleDateString() }}</span>
         </td>
         <td>
-          <input type="date" v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.gueltigBis"
+          <input type="date" v-if="tarif.editMode" v-model="tarif.tempGueltigBis"
                  class="form-control-sm"/>
           <span v-else>{{ new Date(tarif.gueltigBis).toLocaleDateString() }}</span>
         </td>
         <td>
-          <select v-if="selectedTarif && selectedTarif.id === tarif.id" v-model="selectedTarif.zaehler"
+          <select v-if="tarif.editMode" v-model="tarif.tempZaehler"
                   class="form-control-sm">
             <option v-for="zaehler in zaehlerList" :key="zaehler.id" :value="zaehler">
               {{ zaehler.zaehlerNr }}
@@ -138,12 +164,12 @@ const isTarifGueltig = (tarif) => {
           <span v-else>{{ tarif.zaehler.zaehlerNr }}</span>
         </td>
         <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
-          <button v-if="selectedTarif && selectedTarif.id === tarif.id" @click="updateTarif" class="btn btn-sm btn-primary">
+          <button v-if="tarif.editMode" @click="updateTarif(tarif)" class="btn btn-sm btn-primary">
             Speichern
           </button>
-          <button v-else @click="selectTarif(tarif)" class="btn btn-sm btn-secondary">Bearbeiten</button>
-          <button @click="deleteTarif(tarif)" class="btn btn-sm btn-danger">Löschen</button>
-
+          <button v-else @click="startEditing(tarif)" class="btn btn-sm btn-secondary">Bearbeiten</button>
+          <button v-if="!tarif.editMode" @click="deleteTarif(tarif)" class="btn btn-sm btn-danger">Löschen</button>
+          <button v-else @click="abortEditing(tarif)" class="btn btn-sm btn-secondary">Abbrechen</button>
         </td>
       </tr>
       <tr>

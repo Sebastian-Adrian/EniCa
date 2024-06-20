@@ -4,7 +4,6 @@ import { ref, onMounted} from 'vue'
 import axios from 'axios'
 
 const zaehlerList = ref([])
-const selectedZaehler = ref(null)
 const zaehlerstandMap = ref({})
 const newZaehler = ref({ zaehlerNr: '', zaehlerArt: '', zaehlerName: ''})
 const zaehlerArtOptions = ref(['GAS', 'WASSER', 'STROM']);
@@ -14,26 +13,42 @@ const errorMessage = ref('')
 onMounted(async () => {
   try {
     const response = await axios.get('/api/zaehler')
-    zaehlerList.value = response.data
+    zaehlerList.value = response.data.map(zaehler => ({
+      ...zaehler,
+      editMode: false,
+      tempZaehlerNr: zaehler.zaehlerNr,
+      tempZaehlerName: zaehler.zaehlerName
+    }));
+    await fetchLatestZaehlerstand()
   } catch (error) {
     errorMessage.value = `Es gab einen Fehler beim Abrufen der Zähler: ${error.message}`
+    console.error('Fehler beim Abrufen der Zähler:', error)
   }
 })
 
-const selectZaehler = (zaehler) => {
-  selectedZaehler.value = { ...zaehler }
-}
 
-const saveZaehler = async () => {
-  if (selectedZaehler.value) {
+const startEditing = (zaehler) => {
+  zaehler.editMode = true;
+};
+
+const abortEditing = (zaehler) => {
+  zaehler.editMode = false;
+  zaehler.tempZaehlerNr = zaehler.zaehlerNr;
+  zaehler.tempZaehlerName = zaehler.zaehlerName;
+};
+
+
+const saveZaehler = async (zaehler) => {
+  if (zaehler) {
     try {
-      const response = await axios.put(`/api/zaehler/${selectedZaehler.value.id}`, selectedZaehler.value)
-      const index = zaehlerList.value.findIndex(zaehler => zaehler.id === selectedZaehler.value.id)
+      const response = await axios.put(`/api/zaehler/${zaehler.id}`, zaehler)
+      const index = zaehlerList.value.findIndex(oldZaehler => oldZaehler.id === oldZaehler.id)
       zaehlerList.value.splice(index, 1, response.data)
+      zaehler.editMode = false
     } catch (error) {
       errorMessage.value = `Es gab einen Fehler beim Speichern des Zählers: ${error.message}`
+      console.error('Fehler beim Speichern des Zählers:', error)
     }
-    selectedZaehler.value = null
   }
 }
 
@@ -45,6 +60,7 @@ const deleteZaehler = async (zaehler) => {
       zaehlerList.value.splice(index, 1)
     } catch (error) {
       errorMessage.value = `Es gab einen Fehler beim Löschen des Zählers: ${error.message}`
+      console.error('Fehler beim Löschen des Zählers:', error)
     }
   }
 }
@@ -52,10 +68,17 @@ const deleteZaehler = async (zaehler) => {
 const createZaehler = async () => {
   try {
     const response = await axios.post('/api/zaehler', newZaehler.value)
+
+    response.data.editMode = false
+    response.data.tempZaehlerNr = response.data.zaehlerNr
+    response.data.tempZaehlerName = response.data.zaehlerName
+
     zaehlerList.value.push(response.data)
+
     newZaehler.value = { zaehlerNr: '', zaehlerArt: '', zaehlerName: '' }
   } catch (error) {
     errorMessage.value = `Es gab einen Fehler beim Erstellen des Zählers: ${error.message}`
+    console.error('Fehler beim Erstellen des Zählers:', error)
   }
 }
 
@@ -74,25 +97,21 @@ const getZaehlerArtClass = (zaehlerArt) => {
 
 const fetchLatestZaehlerstand = async () => {
   for (const zaehler of zaehlerList.value) {
-    const response = await axios.get(`/api/ablesungen/zaehler/${zaehler.id}`)
-    const ablesungen = response.data
-    if (ablesungen.length > 0) {
-      ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
-      zaehlerstandMap.value[zaehler.zaehlerNr] = ablesungen[0].zaehlerstand.toLocaleString()
-    } else {
-      zaehlerstandMap.value[zaehler.zaehlerNr] = 'N/A'
+    try {
+      const response = await axios.get(`/api/ablesungen/zaehler/${zaehler.id}`)
+      const ablesungen = response.data
+      if (ablesungen.length > 0) {
+        ablesungen.sort((a, b) => new Date(b.datum) - new Date(a.datum))
+        zaehlerstandMap.value[zaehler.zaehlerNr] = ablesungen[0].zaehlerstand.toLocaleString()
+      } else {
+        zaehlerstandMap.value[zaehler.zaehlerNr] = 'N/A'
+      }
+    } catch (error) {
+      errorMessage.value = `Es gab einen Fehler beim Abrufen des Zählerstands: ${error.message}`
+      console.error('Fehler beim Abrufen des Zählerstands:', error)
     }
   }
 }
-
-onMounted(async () => {
-
-  if (zaehlerList.value.length > 0) {
-    const response = await axios.get('/api/zaehler')
-    zaehlerList.value = response.data
-    await fetchLatestZaehlerstand()
-  }
-})
 
 </script>
 
@@ -115,15 +134,15 @@ onMounted(async () => {
       <tbody>
       <tr v-for="zaehler in zaehlerList" :key="zaehler.id">
         <td>
-          <input v-if="selectedZaehler && selectedZaehler.id === zaehler.id" v-model="selectedZaehler.zaehlerNr" class="form-control"/>
+          <input v-if="zaehler.editMode" v-model="zaehler.tempZaehlerNr" class="form-control"/>
           <span v-else>{{ zaehler.zaehlerNr }}</span>
         </td>
         <td>
-          <input v-if="selectedZaehler && selectedZaehler.id === zaehler.id" v-model="selectedZaehler.zaehlerName" class="form-control"/>
+          <input v-if="zaehler.editMode" v-model="zaehler.tempZaehlerName" class="form-control"/>
           <span v-else>{{ zaehler.zaehlerName }}</span>
         </td>
         <td>
-          <select v-if="selectedZaehler && selectedZaehler.id === zaehler.id" id="newZaehlerArt" v-model="selectedZaehler.zaehlerArt" class="form-control">
+          <select v-if="zaehler.editMode" id="newZaehlerArt" v-model="zaehler.zaehlerArt" class="form-control">
             <option v-for="option in zaehlerArtOptions" :key="option" :value="option">
               {{ option }}
             </option>
@@ -134,10 +153,10 @@ onMounted(async () => {
           <span class="bg-light text-black p-1 border-dark rounded-pill badge" > {{ zaehlerstandMap[zaehler.zaehlerNr] }}</span>
         </td>
         <td class="d-grid gap-2 d-md-flex justify-content-sm-start">
-          <button v-if="selectedZaehler && selectedZaehler.id" @click="saveZaehler" class="btn btn-primary">Speichern</button>
-          <button v-else @click="selectZaehler(zaehler)" class="btn btn-secondary">Bearbeiten</button>
-          <button v-if="!selectedZaehler" @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>
-          <button v-else @click="selectedZaehler = null" class="btn btn-secondary">Abbrechen</button>
+          <button v-if="zaehler.editMode" @click="saveZaehler(zaehler)" class="btn btn-primary">Speichern</button>
+          <button v-else @click="startEditing(zaehler)" class="btn btn-secondary">Bearbeiten</button>
+          <button v-if="!zaehler.editMode" @click="deleteZaehler(zaehler)" class="btn btn-danger">Löschen</button>
+          <button v-else @click="abortEditing(zaehler)" class="btn btn-secondary">Abbrechen</button>
         </td>
       </tr>
       <tr>

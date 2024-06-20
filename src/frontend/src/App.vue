@@ -70,10 +70,3 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-
-<style lang="sass">
-
-$enable-dark-mode: false !default
-
-</style>
-
