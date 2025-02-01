@@ -11,5 +11,4 @@ public class EnicaSpringBootVuejsApplication {
     public static void main(String[] args) {
         SpringApplication.run(EnicaSpringBootVuejsApplication.class, args);
     }
-
 }

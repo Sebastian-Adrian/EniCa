@@ -45,10 +45,12 @@ const abortEditing = (tarif) => {
 
 const updateTarif = async (tarif) => {
   if (tarif) {
+    console.log("call updateTarif")
     try {
       const response = await axios.put(`/api/tarife/${tarif.id}`, tarif)
       const index = tarifeList.value.findIndex(oldTarif => oldTarif.id === tarif.id)
       tarifeList.value.splice(index, 1, response.data)
+      console.log("successfull")
     } catch (error) {
       if (error.response && error.response.data) {
         errorMessage.value = await error.response.data
